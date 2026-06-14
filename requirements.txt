@@ -1,0 +1,17 @@
+python-dotenv
+langchain
+langchain-groq
+langgraph
+langgraph-checkpoint-sqlite
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+fastapi
+uvicorn[standard]
+python-multipart
+faster-whisper
+edge-tts
+playwright
+
+# Optional - only needed if you also run the Telegram bot (bot/telegram_bot.py)
+# python-telegram-bot
