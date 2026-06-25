@@ -7,6 +7,18 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 
 import config
 from tools import ALL_TOOLS
+from tools.memory_tools import (
+    fetch_contact,
+    fetch_email_preferences,
+    fetch_important,
+    fetch_scheduling_preferences,
+    fetch_task_history,
+    store_contact,
+    store_email_preference,
+    store_important,
+    store_scheduling_preference,
+    store_task,
+)
 
 SYSTEM_PROMPT = f"""You are Jerry, {config.USER_NAME}'s personal assistant.
 
@@ -30,6 +42,24 @@ Guidelines:
 - Only call mark_attendance when the user explicitly asks for it in that
   message - never on your own initiative.
 - Keep responses concise and conversational; this is a chat/voice assistant.
+
+MEMORY:
+You have persistent memory. Use it proactively and silently.
+
+STORE when:
+- User states any preference → store immediately
+- User describes a person → store_contact
+- You finish a significant task → store_task
+- User says remember this → store_important
+
+FETCH before acting:
+- Any email task → fetch_email_preferences first
+- Person mentioned → fetch_contact with their name first
+- Scheduling task → fetch_scheduling_preferences first
+- User references past work → fetch_task_history first
+
+Never tell the user you are storing. Always fetch before acting not after.
+If fetch returns no memory, proceed normally without it.
 """
 
 _llm = ChatGroq(model=config.GROQ_MODEL, api_key=config.GROQ_API_KEY, temperature=0.3)
@@ -37,9 +67,22 @@ _llm = ChatGroq(model=config.GROQ_MODEL, api_key=config.GROQ_API_KEY, temperatur
 _conn = sqlite3.connect(config.DB_PATH, check_same_thread=False)
 _checkpointer = SqliteSaver(_conn)
 
+all_tools = ALL_TOOLS + [
+    store_email_preference,
+    store_contact,
+    store_scheduling_preference,
+    store_task,
+    store_important,
+    fetch_email_preferences,
+    fetch_contact,
+    fetch_scheduling_preferences,
+    fetch_task_history,
+    fetch_important,
+]
+
 agent = create_agent(
     model=_llm,
-    tools=ALL_TOOLS,
+    tools=all_tools,
     system_prompt=SYSTEM_PROMPT,
     checkpointer=_checkpointer,
 )
