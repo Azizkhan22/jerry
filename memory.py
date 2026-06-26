@@ -53,7 +53,7 @@ def store_memory(content: str, tag: str, name: str = None) -> str:
     else:
         _FALLBACK_STORE.append({"id": memory_id, "content": content, "tag": tag, "name": name})
 
-    return f"Stored memory for {tag}."
+    return f"ok"
 
 
 def retrieve_memory(tag: str, query: str, name: str = None, top_k: int = 3) -> str:

@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 python-dotenv
 langchain
 langchain-groq
@@ -12,6 +14,9 @@ python-multipart
 faster-whisper
 edge-tts
 playwright
+chromadb
+sentence-transformers
+torch
 
 # Optional - only needed if you also run the Telegram bot (bot/telegram_bot.py)
 # python-telegram-bot

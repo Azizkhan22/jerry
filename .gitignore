@@ -1,2 +1,17 @@
 credentials/*.json
 .env
+!.env.example
+.venv
+
+# Local memory and data
+jerry_memory/
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+data/*.json
+data/*.png
+data/voice/
+data/downloads/
+
+# Python
+**/__pycache__/

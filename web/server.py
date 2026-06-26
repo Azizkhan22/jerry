@@ -1,16 +1,19 @@
 import asyncio
+import json
 import os
+import queue
+import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
-from agent.jerry_agent import chat, get_history
+from agent.jerry_agent import chat, get_history, stream_chat
 from voice.stt import transcribe_audio
 from voice.tts import synthesize_speech_mp3
 from web.chats_store import create_chat, delete_chat, list_chats, rename_chat, touch_chat
@@ -107,6 +110,39 @@ async def api_chat(payload: ChatRequest):
     reply = await asyncio.to_thread(chat, payload.chat_id, message)
     touch_chat(payload.chat_id, auto_title_from=payload.message)
     return {"reply": reply}
+
+
+@app.post("/api/chat/stream")
+async def api_chat_stream(payload: ChatRequest):
+    message = _with_attachment_note(payload.chat_id, payload.message)
+    touch_chat(payload.chat_id, auto_title_from=payload.message)
+
+    q: queue.Queue = queue.Queue()
+
+    def run():
+        stream_chat(payload.chat_id, message, q)
+        q.put(None)
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+
+    async def generate():
+        while True:
+            try:
+                event = q.get(timeout=0.2)
+            except queue.Empty:
+                await asyncio.sleep(0.05)
+                continue
+            if event is None:
+                break
+            yield f"data: {json.dumps(event)}\n\n"
+        yield 'data: {"type":"done"}\n\n'
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/voice")

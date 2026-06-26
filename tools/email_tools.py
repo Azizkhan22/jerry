@@ -46,12 +46,28 @@ def list_recent_emails(max_results: int | str = 10, query: str = "is:unread") ->
     if not messages:
         return "No emails found matching that query."
 
+    batch_results = {}
+
+    def _on_response(request_id, response, exception):
+        if exception is None:
+            batch_results[request_id] = response
+
+    batch = service.new_batch_http_request(callback=_on_response)
+    for msg in messages:
+        batch.add(
+            service.users().messages().get(
+                userId="me", id=msg["id"], format="metadata",
+                metadataHeaders=["From", "Subject", "Date"],
+            ),
+            request_id=msg["id"],
+        )
+    batch.execute()
+
     lines = []
     for msg in messages:
-        meta = service.users().messages().get(
-            userId="me", id=msg["id"], format="metadata",
-            metadataHeaders=["From", "Subject", "Date"],
-        ).execute()
+        meta = batch_results.get(msg["id"])
+        if not meta:
+            continue
         headers = {h["name"]: h["value"] for h in meta["payload"]["headers"]}
         lines.append(
             f"ID: {msg['id']}\n"
