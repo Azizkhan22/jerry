@@ -6,7 +6,7 @@ Your data never leaves your machine. Conversations are persisted in a local SQLi
 
 <div align="center">
 
-[Demo Video](https://youtube.com/DEMO_VIDEO_LINK)
+[Demo Video]([https://youtu.be/HHIcETplriE?si=0pbKGMC8TVp9SBPX])
 
 </div>
 
