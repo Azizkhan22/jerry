@@ -5,9 +5,7 @@ Jerry is a local-first AI personal assistant that runs entirely on your machine.
 Your data never leaves your machine. Conversations are persisted in a local SQLite database, memories are stored in a local ChromaDB instance, and voice processing happens offline. The only external calls are to the LLM provider for reasoning and to Google's APIs to act on your behalf.
 
 <div align="center">
-
-[Demo Video]([https://youtu.be/HHIcETplriE?si=0pbKGMC8TVp9SBPX])
-
+<a href="https://www.youtube.com/watch?v=HHIcETplriE" target="_blank">Demo Video</a>
 </div>
 
 ## Why Jerry Exists
